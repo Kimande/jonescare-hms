@@ -1,9 +1,9 @@
-import { Router } from 'express'
 import bcrypt from 'bcrypt'
+import { Router } from 'express'
 import { z } from 'zod'
-import { prisma } from '../lib/prisma'
 import { signToken } from '../lib/jwt'
-import { requireAuth, AuthRequest } from '../middleware/auth'
+import { prisma } from '../lib/prisma'
+import { AuthRequest, requireAuth } from '../middleware/auth'
 
 const router = Router()
 
@@ -20,12 +20,12 @@ router.post('/login', async (req, res) => {
 
   const { email, password } = parsed.data
 
-  const user = await prisma.user.findUnique({ where: { email } })
+  const user = await prisma.users.findUnique({ where: { email } })
   if (!user || user.status !== 'ACTIVE') {
     return res.status(401).json({ error: 'Invalid email or password' })
   }
 
-  const ok = await bcrypt.compare(password, user.passwordHash)
+  const ok = await bcrypt.compare(password, user.password_hash)
   if (!ok) {
     return res.status(401).json({ error: 'Invalid email or password' })
   }
@@ -44,7 +44,7 @@ router.post('/login', async (req, res) => {
 })
 
 router.get('/me', requireAuth, async (req: AuthRequest, res) => {
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: req.user!.id },
     select: { id: true, name: true, email: true, role: true, status: true },
   })
