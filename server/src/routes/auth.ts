@@ -51,5 +51,37 @@ router.get('/me', requireAuth, async (req: AuthRequest, res) => {
   if (!user) return res.status(404).json({ error: 'User not found' })
   res.json({ user })
 })
+// PUBLIC ROUTE: Allow creating an admin account without requiring access to an existing one
+router.post('/register-admin', async (req, res) => {
+  try {
+    const { name, email, password, phone } = req.body
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email, and password are required.' })
+    }
+
+    const existingUser = await prisma.users.findUnique({ where: { email } })
+    if (existingUser) {
+      return res.status(400).json({ error: 'An account with this email already exists.' })
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10)
+    await prisma.users.create({
+      data: {
+        name,
+        email,
+        phone: phone || '0700000000',
+        gender: 'OTHER',
+        role: 'ADMIN',
+        password_hash: passwordHash,
+        status: 'ACTIVE',
+      },
+    })
+
+    res.status(201).json({ message: 'Admin registered successfully!' })
+  } catch (error) {
+    console.error('Admin registration failed:', error)
+    res.status(500).json({ error: 'Failed to register admin.' })
+  }
+})
 
 export default router

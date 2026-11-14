@@ -1,4 +1,25 @@
-﻿node_modules/
+﻿# Dependencies
+node_modules/
+
+# Production builds
 dist/
+build/
+
+# Environment variables (Passwords & Secrets)
 .env
+.env.local
+*.local
+
+# Prisma generated client
+src/generated/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS / Editor files
 .DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea
